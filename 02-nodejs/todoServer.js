@@ -122,7 +122,7 @@ app.post('/todos',addnew)
 app.put('/todos/:id',update)
 app.delete('/todos/:id',del)
 
-app.listen(port,()=>{
-  console.log('Listening on '+port);
-})
+// app.listen(port,()=>{
+//   console.log('Listening on '+port);
+// })
 module.exports = app;

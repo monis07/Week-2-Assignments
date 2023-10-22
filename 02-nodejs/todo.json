@@ -1,14 +1,6 @@
 [
-{
-    "title":"Book",
-    "description":"Need to buy a book from market"
-},
-{
-    "title":"Milk",
-    "description":"Need to buy a book from Milk"
-},
-{
-    "title":"Shop",
-    "description":"Go to a shop"
-}
+  {
+    "title": "camp",
+    "description": "Go camping and this is updated using put request"
+  }
 ]

@@ -30,8 +30,100 @@
  */
 
 const express = require("express")
-const PORT = 3000;
+const port = 3000;
 const app = express();
-// write your logic here, DONT WRITE app.listen(3000) when you're running tests, the tests will automatically start the server
+const fs=require('fs')
+const bodyParser = require('body-parser');
+const crypto=require('crypto');
+const jwt=require('jsonwebtoken');
+
+app.use(bodyParser.json());
+
+//1st part
+
+function signup(req,res){
+  fs.readFile('user_data.json','utf-8',(err,data)=>{
+    if(err){
+      console.error(err)
+      return;
+    }
+    var data_signup=JSON.parse(data);
+    let length=data_signup.length;
+    var written=false;
+    if(length!==0){
+      data_signup.forEach(element => {
+        if(element.username===req.body.username)
+        {
+          res.status(400).send("Username already exits");
+          written=true;
+        }
+      });
+    }
+    if(written===false){
+    data_signup.push(req.body);
+    var data_signup1=JSON.stringify(data_signup,null,2);
+      fs.writeFile('user_data.json',data_signup1,(err)=>{
+        if(err){
+          console.error(err);
+        }
+      })
+    res.status(201).send("Account created successfully")
+    }
+  })
+}
+
+function generateToken(length){
+  return crypto.randomBytes(length).toString('hex');
+}
+
+
+
+function login(req,res){
+  var valid=false;
+  var credentials=req.body;
+  fs.readFile('user_data.json','utf-8',(err,data)=>{
+    if(err){
+      console.error(err);
+      return;
+    }
+    var all_data=JSON.parse(data);
+    all_data.forEach(element => {
+      if(element.username===credentials.username && element.password===credentials.password){
+        var secretkey=generateToken(32);
+        var usern=element.username;
+        var response={
+        username:element.username,
+        firstName:element.firstName,
+        lastName:element.lastName,
+        token:jwt.sign({usern},secretkey)
+        }
+        valid=true;
+        res.status(200).send(response);
+        return;
+      }
+    });
+    if(valid===false)
+  res.status(401).send("Invalid credentials");
+  })
+  
+}
+
+// function authenticateUser(req,res,next){
+//   var data=req.body;
+
+// }
+
+// // function data(req,res){
+
+// // }
+
+app.post('/signup',signup)
+app.post('/login',login)
+// app.get('/data',authenticateUser)
+
+app.listen(port,()=>{
+  console.log("Listening at "+port);
+})
+
 
 module.exports = app;

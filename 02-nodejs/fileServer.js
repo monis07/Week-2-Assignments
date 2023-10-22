@@ -20,6 +20,52 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const app = express();
+const port=3000
 
+function readfileNames(req,res){
+fs.readdir('C:/Users/Lenovo/Desktop/week2_assignments/Week-2-Assignments/02-nodejs/files',(err,data)=>{
+  if(err){
+    console.error(err)
+    return;
+  }
+  console.log(typeof(data));
+  res.status(200).send(data);
+})
+}
+
+
+
+function readfilecontent(req,res){
+  fs.readdir('C:/Users/Lenovo/Desktop/week2_assignments/Week-2-Assignments/02-nodejs/files', (err, data) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+var fileName=(req.params.filename);
+var found=false;
+data.forEach(element => {
+  if(element===fileName){
+    found=true;
+    fs.readFile('C:/Users/Lenovo/Desktop/week2_assignments/Week-2-Assignments/02-nodejs/files/'+fileName,'utf-8',(err,data)=>{
+      if(err){
+        res.status(404).send("Empty data");
+        return;
+      }
+      res.status(200).send(data);
+    })
+  }
+});
+if(found===false)
+  res.status(404).send("File not found");
+  });
+  
+}
+
+app.get('/files',readfileNames);
+app.get('/file/:filename',readfilecontent)
+
+app.listen(port,()=>{
+  console.log("Listening on port "+port);
+})
 
 module.exports = app;
