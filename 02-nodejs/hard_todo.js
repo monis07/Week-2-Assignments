@@ -3,31 +3,19 @@ const bodyParser = require('body-parser');
 const port=3000;
 const app = express();
 const fs=require('fs');
-
-
+const { log } = require('console');
 app.use(bodyParser.json());
 
+function getAll(req,res){
+  fs.readFile('todo.json','utf-8',(err,data)=>{
+    if(err){
+      console.error(err);
+      return;
+    }
+    res.status(200).send(data);
+  })
+}
 
-
-
-//2nd part
-// function retrievespecific(req,res){
-//   var ids=parseInt(req.params.id);
-//   fs.readFile('todo.json','utf-8',(err,data)=>{
-//     if(err){
-//         console.log(err);
-//         return;
-//     }
-//     var data_new=JSON.parse(data);
-//     if(ids>=0 && ids<=data_new.length-1)
-//    res.status(200).send(data_new[ids]);
-//    else
-//    res.status(404).send("Error");
-//   })
-  
-// }
-
-//3rd part
 function addnew(req,res){
   var obj=req.body;
   fs.readFile('todo.json','utf-8',(err,data)=>{
@@ -45,11 +33,10 @@ function addnew(req,res){
             return;
         }
     })
-    res.status(201).sendFile(__dirname+'/todo.json');
+    res.status(201).json(obj);
   })
 }
 
-//4th part
 function update(req,res){
   let ids=parseInt(req.params.id)
   var obj_update=req.body;
@@ -76,8 +63,8 @@ function update(req,res){
   })
 }
 
-//5th part
 function del(req,res){
+  var count=0;
 let ids=parseInt(req.params.id);
 fs.readFile('todo.json','utf-8',(err,data)=>{
     if(err){
@@ -85,68 +72,33 @@ fs.readFile('todo.json','utf-8',(err,data)=>{
         return;
     }
     var delete_data1=JSON.parse(data);
-    if(ids>=0 && ids<=delete_data1.length-1){
-        delete_data1.splice(ids,1);
-        var delete_data2=JSON.stringify(delete_data1,null,2);
+    for(let i=0;i<delete_data1.length;i++){
+      if(delete_data1[i].id===ids){
+      delete_data1.splice(i,1);
+      count+=1;
+      break;
+      }
+    }
+    if(count===1){
+      var delete_data2=JSON.stringify(delete_data1,null,2);
         fs.writeFile('todo.json',delete_data2,(err)=>{
             if(err){
                 console.log("Error")
                 return;
             }
-            res.status(200).send("Deleted");
+            res.status(200).send();
         })
-      }
-      else
-      res.status(404).send("Error");
-})
+    }
+      })
 }
 
-
-
-
-
-//   app.get('/', (req, res) => {
-//     const htmlContent = `
-//     <!DOCTYPE html>
-// <html lang="en">
-// <head>
-//     <meta charset="UTF-8">
-//     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-//     <title>TO do app</title>
-// </head>
-// <body>
-//     <form action="http://localhost:3000/todos" method="post">
-//         <p>
-//         <label for="title">Title</label>
-//         <input type="text" id="title" name="title" placeholder="Title" autocomplete="on" autofocus>
-//         </p>
-        
-//         <p>
-//         <label for="description">Description</label>
-//         <input type="text" id="description" name="description" placeholder="description" autocomplete="on">
-//         </p>
-        
-//         <button id="fetch_new" type="submit" onclick="onPress()">Add new To-do</button>
-//         </form>
-
-//         <ul>
-//             ${require('./todo.json').map(todo => `<li>${todo.title}: ${todo.description}</li>`).join('')}
-//             </ul>
-// </body>
-// </html>
-//     `;
-
-//     res.send(htmlContent);
-// });
 app.get('/',(req,res)=>{
   res.sendFile(__dirname+'/index.html');
 })
-
+app.get('/todos',getAll)
 app.post('/todos',addnew)
 // app.put('/todos/:id',update)
-// app.delete('/todos/:id',del)
-
-
+app.delete('/todos/:id',del)
 
 app.listen(port,()=>{
   console.log('Listening on '+port);

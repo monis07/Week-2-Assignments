@@ -25,31 +25,101 @@
         </p>
         
         <button id="fetch_new" type="submit" onclick="onPress()">Add new To-do</button>
+        <div id="mainarea">
+            
+        </div>
 </body>
 </html>
 </body>
 <script>
 
+    //code for delete
+function delete_id(id){
+    fetch("http://localhost:3000/todos/"+id,{
+        method:"DELETE",
+    }).then(()=>{
+        const parentElement = document.getElementById('mainarea');
+        const children = parentElement.querySelectorAll('div');//select all child div elements
+
+// Loop through the child elements and find the one with the desired onclick attribute
+children.forEach(child => {
+    const onclickAttribute = child.querySelector('button').getAttribute('onclick');
+    if (onclickAttribute === 'delete_id('+id+')') {
+        mainArea.removeChild(child);
+    }
+});
+    })
+}
+
+//Code for get 
+function getData(){
+        fetch("http://localhost:3000/todos",{
+        method:"GET"
+    }).then(result=>result.json())
+    .then(response=>{
+        var parentElement=document.getElementById("mainarea")
+        //document.getElementById('mainarea').innerHTML=JSON.stringify(response)
+        for(let i=0;i<response.length;i++){
+        var childElement=document.createElement("div")
+
+        var grandchildElement1=document.createElement("span");
+        grandchildElement1.innerHTML=response[i].title;
+        var grandchildElement2=document.createElement("span");
+        grandchildElement2.innerHTML=response[i].description;
+        var grandchildElement3=document.createElement("button");
+        grandchildElement3.innerHTML="Delete"
+        grandchildElement3.setAttribute("onclick","delete_id("+response[i].id+")");
+
+        childElement.appendChild(grandchildElement1)
+        childElement.appendChild(grandchildElement2)
+        childElement.appendChild(grandchildElement3)
+
+        parentElement.appendChild(childElement)
+        }
+        
+    })
+    }
+
+    getData();
+
 //Code for post request
 function onPress(){
-    const new_data={
-        'title':document.getElementById('title').value,
-        'description':document.getElementById('description').value
-    }
-    const fetchdata=document.getElementById('fetch_new');
-    fetchdata.addEventListener('click',()=>{
+    
+    var title=document.getElementById('title').value;
+    console.log(title);
+    var description=document.getElementById('description').value;
+    console.log(description);
         fetch("http://localhost:3000/todos",{
         method:"POST",
         headers:{
             'Content-Type':'application/json',
         },
-        body:JSON.stringify(new_data),
+        body:JSON.stringify({
+            'title':title,
+            'description':description,
+            'id':Math.floor(Math.random()*100000)
+        })
     }).then(result=>result.json())
     .then(response=>{
-        console.log(response);
+        var parentElement=document.getElementById("mainarea")
+        var childElement=document.createElement("div")
+
+        var grandchildElement1=document.createElement("span");
+        grandchildElement1.innerHTML=response.title;
+        var grandchildElement2=document.createElement("span");
+        grandchildElement2.innerHTML=response.description;
+        var grandchildElement3=document.createElement("button");
+        grandchildElement3.innerHTML="Delete"
+        grandchildElement3.setAttribute("onclick","delete_id("+response.id+")");
+
+        childElement.appendChild(grandchildElement1)
+        childElement.appendChild(grandchildElement2)
+        childElement.appendChild(grandchildElement3)
+
+        parentElement.appendChild(childElement)
     })
-    })
-}
+    }
+
 
 </script>
 </html>
