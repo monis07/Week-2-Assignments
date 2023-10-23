@@ -1,6 +1,10 @@
 [
   {
-    "title": "camp",
-    "description": "Go camping and this is updated using put request"
+    "title": "gym",
+    "description": "go to class"
+  },
+  {
+    "title": "fire",
+    "description": "fire"
   }
 ]

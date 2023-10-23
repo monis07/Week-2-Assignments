@@ -4,50 +4,40 @@ const port=3000;
 const app = express();
 const fs=require('fs');
 
+
 app.use(bodyParser.json());
 
-//1st part
-function retrieve(req,res){
-  fs.readFile('todo.json','utf-8',(err,data)=>{
-    if(err){
-        console.log(err);
-        return;
-    }
-    res.status(200).send(data);
-  })
-}
+
+
 
 //2nd part
-function retrieveAll(req,res){
-  var ids=parseInt(req.params.id);
-  fs.readFile('todo.json','utf-8',(err,data)=>{
-    if(err){
-        console.log(err);
-        return;
-    }
-    var data_new=JSON.parse(data);
-    if(ids>=0 && ids<=data_new.length-1)
-   res.status(200).send(data_new[ids]);
-   else
-   res.status(404).send("Error");
-  })
+// function retrievespecific(req,res){
+//   var ids=parseInt(req.params.id);
+//   fs.readFile('todo.json','utf-8',(err,data)=>{
+//     if(err){
+//         console.log(err);
+//         return;
+//     }
+//     var data_new=JSON.parse(data);
+//     if(ids>=0 && ids<=data_new.length-1)
+//    res.status(200).send(data_new[ids]);
+//    else
+//    res.status(404).send("Error");
+//   })
   
-}
+// }
 
 //3rd part
 function addnew(req,res){
   var obj=req.body;
   fs.readFile('todo.json','utf-8',(err,data)=>{
     if(err){
-        console.log("Error");
+        console.error("Error");
         return;
     }
     var data_new=JSON.parse(data);
     data_new.push(obj);
-    var obj_return={
-        id:data_new.length-1
-    }
-    data_new1=JSON.stringify(data_new,null,2);
+    var data_new1=JSON.stringify(data_new,null,2);
     fs.writeFile('todo.json',data_new1,(err)=>{
         if(err)
         {
@@ -55,7 +45,7 @@ function addnew(req,res){
             return;
         }
     })
-    res.status(201).send(obj_return);
+    res.status(201).sendFile(__dirname+'/todo.json');
   })
 }
 
@@ -111,11 +101,52 @@ fs.readFile('todo.json','utf-8',(err,data)=>{
 })
 }
 
-app.get('/todos',retrieve)
-app.get('/todos/:id',retrieveAll)
+
+
+
+
+//   app.get('/', (req, res) => {
+//     const htmlContent = `
+//     <!DOCTYPE html>
+// <html lang="en">
+// <head>
+//     <meta charset="UTF-8">
+//     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+//     <title>TO do app</title>
+// </head>
+// <body>
+//     <form action="http://localhost:3000/todos" method="post">
+//         <p>
+//         <label for="title">Title</label>
+//         <input type="text" id="title" name="title" placeholder="Title" autocomplete="on" autofocus>
+//         </p>
+        
+//         <p>
+//         <label for="description">Description</label>
+//         <input type="text" id="description" name="description" placeholder="description" autocomplete="on">
+//         </p>
+        
+//         <button id="fetch_new" type="submit" onclick="onPress()">Add new To-do</button>
+//         </form>
+
+//         <ul>
+//             ${require('./todo.json').map(todo => `<li>${todo.title}: ${todo.description}</li>`).join('')}
+//             </ul>
+// </body>
+// </html>
+//     `;
+
+//     res.send(htmlContent);
+// });
+app.get('/',(req,res)=>{
+  res.sendFile(__dirname+'/index.html');
+})
+
 app.post('/todos',addnew)
-app.put('/todos/:id',update)
-app.delete('/todos/:id',del)
+// app.put('/todos/:id',update)
+// app.delete('/todos/:id',del)
+
+
 
 app.listen(port,()=>{
   console.log('Listening on '+port);
