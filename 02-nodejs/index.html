@@ -3,33 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TO do app</title>
+    <title>To do app</title>
 </head>
 <body>
-    <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TO do app</title>
-</head>
-<body>
-        <p>
-        <label for="title">Title</label>
-        <input type="text" id="title" name="title" placeholder="Title" autocomplete="on" autofocus>
-        </p>
-        
-        <p>
-        <label for="description">Description</label>
-        <input type="text" id="description" name="description" placeholder="description" autocomplete="on">
-        </p>
-        
-        <button id="fetch_new" type="submit" onclick="onPress()">Add new To-do</button>
-        <div id="mainarea">
-            
-        </div>
-</body>
-</html>
+    <p>
+    <label for="title">Title</label>
+    <input type="text" id="title" name="title" placeholder="Title" autocomplete="on" autofocus>
+    </p>
+    
+    <p>
+    <label for="description">Description</label>
+    <input type="text" id="description" name="description" placeholder="description" autocomplete="on">
+    </p>
+    
+    <button id="fetch_new" type="submit" onclick="onPress()">Add new To-do</button>
+    <div id="mainarea">
+    </div>
 </body>
 <script>
 
@@ -45,34 +34,37 @@ function delete_id(id){
 children.forEach(child => {
     const onclickAttribute = child.querySelector('button').getAttribute('onclick');
     if (onclickAttribute === 'delete_id('+id+')') {
-        mainArea.removeChild(child);
+        parentElement.removeChild(child);
     }
 });
     })
 }
 
-//Code for get 
+//Code for getting data 
 function getData(){
         fetch("http://localhost:3000/todos",{
         method:"GET"
     }).then(result=>result.json())
     .then(response=>{
         var parentElement=document.getElementById("mainarea")
-        //document.getElementById('mainarea').innerHTML=JSON.stringify(response)
         for(let i=0;i<response.length;i++){
         var childElement=document.createElement("div")
 
-        var grandchildElement1=document.createElement("span");
+        var grandchildElement1=document.createElement("h3");
         grandchildElement1.innerHTML=response[i].title;
-        var grandchildElement2=document.createElement("span");
+        var grandchildElement2=document.createElement("p");
         grandchildElement2.innerHTML=response[i].description;
         var grandchildElement3=document.createElement("button");
         grandchildElement3.innerHTML="Delete"
         grandchildElement3.setAttribute("onclick","delete_id("+response[i].id+")");
+         var grandchildElement4=document.createElement('button');
+         grandchildElement4.innerHTML="Edit"
+        grandchildElement4.setAttribute("onclick","edit_task("+response[i].id+")")
 
         childElement.appendChild(grandchildElement1)
         childElement.appendChild(grandchildElement2)
         childElement.appendChild(grandchildElement3)
+        childElement.appendChild(grandchildElement4)
 
         parentElement.appendChild(childElement)
         }
@@ -82,7 +74,7 @@ function getData(){
 
     getData();
 
-//Code for post request
+//Code for post request or creating a new to do in list
 function onPress(){
     
     var title=document.getElementById('title').value;
@@ -104,22 +96,66 @@ function onPress(){
         var parentElement=document.getElementById("mainarea")
         var childElement=document.createElement("div")
 
-        var grandchildElement1=document.createElement("span");
+        var grandchildElement1=document.createElement("h3");
         grandchildElement1.innerHTML=response.title;
-        var grandchildElement2=document.createElement("span");
+        var grandchildElement2=document.createElement("p");
         grandchildElement2.innerHTML=response.description;
         var grandchildElement3=document.createElement("button");
         grandchildElement3.innerHTML="Delete"
         grandchildElement3.setAttribute("onclick","delete_id("+response.id+")");
+        var grandchildElement4=document.createElement('button');
+        grandchildElement4.innerHTML="Edit"
+        grandchildElement4.setAttribute("onclick","edit_task("+response.id+")")
 
         childElement.appendChild(grandchildElement1)
         childElement.appendChild(grandchildElement2)
         childElement.appendChild(grandchildElement3)
+        childElement.appendChild(grandchildElement4)
+
 
         parentElement.appendChild(childElement)
     })
     }
 
+    function edit_task(id) {
+    console.log("Edit button clicked");
+    let edited_title = '';
+    let edited_description = '';
+
+    const parentElement = document.getElementById('mainarea');
+    const children = parentElement.querySelectorAll('div');
+    console.log(children)
+
+    children.forEach(child => {
+        const childTitle = child.querySelector('h3');
+        const childDes = child.querySelector('p');
+        const editButton = child.querySelectorAll('button');
+    
+        if (editButton[1].getAttribute('onclick') === 'edit_task(' + id + ')') {
+            edited_title = prompt("Edit the title or click cancel to keep the current title",childTitle.textContent);
+            if(edited_title === '')
+            edited_title=childTitle.textContent;
+            edited_description = prompt("Edit the description or click cancel to keep the current description",childDes.textContent);
+            if(edited_description === '')
+            edited_description=childDes.textContent;
+        }
+    });
+
+        fetch('http://localhost:3000/todos/' + id, {
+            method: "PUT",
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                'title': edited_title,
+                'description': edited_description,
+                'id': id
+            })
+        })
+        .then(()=>{
+            getData();
+        })
+}
 
 </script>
 </html>

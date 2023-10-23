@@ -3,7 +3,8 @@ const bodyParser = require('body-parser');
 const port=3000;
 const app = express();
 const fs=require('fs');
-const { log } = require('console');
+const cors=require('cors');
+app.use(cors());
 app.use(bodyParser.json());
 
 function getAll(req,res){
@@ -38,6 +39,7 @@ function addnew(req,res){
 }
 
 function update(req,res){
+  let count_update=0;
   let ids=parseInt(req.params.id)
   var obj_update=req.body;
   fs.readFile('todo.json','utf-8',(err,data)=>{
@@ -46,20 +48,23 @@ function update(req,res){
         return;
     }
     var data_update=JSON.parse(data);
-    if(ids>=0 && ids<=data_update.length-1){
-        data_update[ids]=obj_update;
-        res.status(200).send("Updated");
+    for(let i=0;i<data_update.length;i++){
+      if(data_update[i].id===ids){
+        count_update+=1;
+        data_update[i]=obj_update;
+        break;
       }
-      else{
-        res.status(404).send("Error");
-      }
-      data_updatenew=JSON.stringify(data_update,null,4);
+    }
+    if(count_update===1){
+      var data_updatenew=JSON.stringify(data_update,null,2);
       fs.writeFile('todo.json',data_updatenew,(err)=>{
         if(err){
             console.log("Error")
             return;
         }
       })
+    }
+    res.status(200).send(); 
   })
 }
 
@@ -97,10 +102,9 @@ app.get('/',(req,res)=>{
 })
 app.get('/todos',getAll)
 app.post('/todos',addnew)
-// app.put('/todos/:id',update)
+app.put('/todos/:id',update)
 app.delete('/todos/:id',del)
 
 app.listen(port,()=>{
   console.log('Listening on '+port);
 })
-module.exports = app;
